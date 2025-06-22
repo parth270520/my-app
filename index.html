@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Parth Corporation - OT Tracker</title>
+    <style>
+        /* सामान्य बॉडी स्टाइलिंग */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f0f0f0; /* हल्का ग्रे बैकग्राउंड */
+            margin: 0;
+            padding: 20px;
+        }
+
+        /* पूरे एप्लिकेशन के लिए कंटेनर */
+        .container {
+            max-width: 960px; /* अधिकतम चौड़ाई */
+            margin: auto; /* पेज के बीच में रखें */
+            background: #fff; /* सफेद बैकग्राउंड */
+            border-radius: 12px; /* गोल किनारे */
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* हल्का शैडो */
+            padding: 20px;
+        }
+
+        /* मुख्य शीर्षक (Parth Corporation - OT Tracker) */
+        h1 {
+            text-align: center; /* बीच में अलाइन करें */
+            color: #1565c0; /* गहरा नीला रंग */
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        /* साइडबार और कैलेंडर के लिए लेआउट */
+        .layout {
+            display: flex; /* फ्लेक्सबॉक्स लेआउट का उपयोग करें */
+            flex-direction: column; /* छोटी स्क्रीन पर लंबवत स्टैक करें */
+            gap: 20px; /* तत्वों के बीच का गैप */
+        }
+
+        /* 768px से बड़ी स्क्रीन के लिए रिस्पॉन्सिव लेआउट */
+        @media(min-width: 768px) {
+            .layout {
+                flex-direction: row; /* बड़ी स्क्रीन पर अगल-बगल रखें */
+            }
+        }
+
+        /* इनपुट के लिए साइडबार */
+        .sidebar {
+            flex: 1; /* उपलब्ध स्थान का 1 हिस्सा ले */
+            background: #f1f8e9; /* हल्का हरा बैकग्राउंड */
+            border-radius: 10px;
+            padding: 15px;
+            min-width: 220px; /* न्यूनतम चौड़ाई */
+            box-sizing: border-box; /* पैडिंग को चौड़ाई में शामिल करें */
+            display: flex; /* साइडबार को फ्लेक्स कंटेनर बनाएं */
+            flex-direction: column; /* आइटमों को लंबवत व्यवस्थित करें */
+            justify-content: space-between; /* रीस्टार्ट बटन को नीचे धकेलें */
+        }
+
+        .sidebar label {
+            font-weight: bold;
+            font-size: 14px;
+            display: block; /* प्रत्येक लेबल नई लाइन पर */
+            margin-top: 10px;
+            user-select: none; /* टेक्स्ट चयन को रोकें */
+        }
+
+        .sidebar input,
+        .sidebar select {
+            width: 100%; /* पूरी चौड़ाई */
+            margin-top: 6px;
+            padding: 8px;
+            font-size: 14px;
+            border-radius: 4px;
+            border: 1px solid #c8e6c9; /* हल्का हरा बॉर्डर */
+            box-sizing: border-box;
+        }
+
+        .sidebar input[type="checkbox"] {
+            width: auto; /* चेकबॉक्स के लिए 100% चौड़ाई को ओवरराइड करें */
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+
+        /* रीस्टार्ट बटन के लिए स्टाइल */
+        .restart-button {
+            background-color: #dc3545; /* लाल रंग */
+            color: white; /* सफेद टेक्स्ट */
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 20px; /* ऊपर के तत्वों से दूरी */
+            width: 100%; /* पूरी चौड़ाई */
+            transition: background-color 0.2s ease; /* होवर पर स्मूथ ट्रांज़िशन */
+        }
+
+        .restart-button:hover {
+            background-color: #c82333; /* होवर पर गहरा लाल */
+        }
+
+        /* कैलेंडर सेक्शन */
+        .calendar {
+            flex: 2; /* उपलब्ध स्थान का 2 भाग ले */
+            box-sizing: border-box;
+        }
+
+        /* दिनों के लिए कैलेंडर ग्रिड */
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr); /* 5 कॉलम, बराबर चौड़ाई */
+            gap: 10px; /* ग्रिड आइटमों के बीच का गैप */
+        }
+
+        /* प्रत्येक दिन बॉक्स के लिए स्टाइलिंग */
+        .day {
+            background: #e3f2fd; /* हल्का नीला */
+            border-radius: 8px;
+            padding: 10px;
+            font-size: 12px;
+            text-align: center;
+            user-select: none;
+            cursor: pointer; /* इंगित करता है कि यह क्लिक करने योग्य है */
+            transition: background-color 0.2s; /* होवर/क्लिक के लिए स्मूथ ट्रांज़िशन */
+        }
+
+        /* अनुपस्थित दिन के लिए स्टाइल */
+        .day.absent-day {
+            background-color: #ffcccc; /* हल्का लाल */
+            border: 1px solid #ff6666; /* लाल बॉर्डर */
+            color: #c00; /* गहरा लाल टेक्स्ट */
+        }
+        
+        /* होवर प्रभाव */
+        .day:hover {
+            background-color: #d1ecf1; /* होवर पर हल्का करें */
+        }
+        .day.absent-day:hover {
+            background-color: #ffb3b3; /* अनुपस्थित दिनों के लिए होवर पर हल्का लाल */
+        }
+
+        /* दिन संख्या टेक्स्ट के लिए स्टाइलिंग */
+        .day div {
+            font-weight: bold;
+            margin-bottom: 6px;
+        }
+
+        /* दिन बॉक्स के भीतर OT इनपुट फ़ील्ड के लिए स्टाइलिंग */
+        .day input {
+            width: 100%;
+            font-size: 14px;
+            text-align: center;
+            padding: 4px;
+            border: 1px solid #90caf9; /* नीला बॉर्डर */
+            border-radius: 4px;
+        }
+        
+        /* निरंतरता के लिए अनुपस्थित दिन के भीतर इनपुट बॉर्डर को एडजस्ट करें */
+        .absent-day input {
+            border-color: #e09999;
+        }
+
+        /* कुल सेक्शन स्टाइलिंग */
+        .totals {
+            background: #c8e6c9; /* मध्यम हल्का हरा */
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 15px;
+            user-select: none;
+        }
+
+        .totals p {
+            margin: 6px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Parth Corporation - OT Tracker</h1>
+
+        <div class="layout">
+            <div class="sidebar">
+                <div> <label for="userName">User Name</label>
+                    <input type="text" id="userName" placeholder="Enter your name" />
+
+                    <label for="dailyPayInput">Daily Payment ₹</label>
+                    <input type="number" id="dailyPayInput" min="0" step="1" />
+
+                    <label for="otRateInput">OT Rate ₹ per hour</label>
+                    <input type="number" id="otRateInput" min="0" step="0.5" />
+
+                    <label for="advanceInput">Advance Payment ₹ (will deduct from total)</label>
+                    <input type="number" id="advanceInput" min="0" step="1" placeholder="Enter advance (positive)" />
+                    
+                    <label for="dayCountSelector">Days in Calendar:</label>
+                    <select id="dayCountSelector">
+                        <option value="26">26</option>
+                        <option value="27" selected>27</option>
+                        <option value="28">28</option>
+                        <option value="29">29</option>
+                        <option value="30">30</option>
+                        <option value="31">31</option>
+                    </select>
+
+                    <label>
+                        <input type="checkbox" id="epfoToggle" checked />
+                        EPFO (12% deduction)
+                    </label>
+                </div>
+                <button id="restartButton" class="restart-button">Restart / Clear All Data</button>
+            </div>
+
+            <div class="calendar">
+                <div style="text-align: center; margin-bottom: 15px;">
+                    <button id="prevMonthBtn" style="padding: 8px 12px; margin-right: 10px; cursor: pointer;">&lt; Previous Month</button>
+                    <span id="currentMonthYear" style="font-size: 1.2em; font-weight: bold;"></span>
+                    <button id="nextMonthBtn" style="padding: 8px 12px; margin-left: 10px; cursor: pointer;">Next Month &gt;</button>
+                </div>
+                
+                <div class="calendar-grid" id="calendarGrid"></div>
+
+                <div class="totals">
+                    <p>User: <span id="displayUser">---</span></p>
+                    <p>Total OT Hours: <span id="totalOT">0</span></p>
+                    <p>OT Payment: ₹<span id="totalOTPay">0</span></p>
+                    <p>Total Daily Pay: ₹<span id="totalDailyPay">0</span></p>
+                    <p>Advance: ₹<span id="advancePay">0</span></p>
+                    <p>Absent Days: <span id="displayAbsentDays">0</span></p>
+                    <p>Absent Deduction: ₹<span id="absentDeduction">0</span></p>
+                    <p>EPFO (12%): ₹<span id="epfoDeduct">0</span></p>
+                    <p><strong>Grand Total: ₹<span id="grandTotal">0</span></strong></p>
+                </div>
+
+                </div>
+        </div>
+    </div>
+
+    <script>
+        // --- DOM Elements ---
+        // HTML एलिमेंट्स को JavaScript में एक्सेस करने के लिए वेरिएबल्स
+        const calendarGrid = document.getElementById("calendarGrid");
+        const dayCountSelector = document.getElementById("dayCountSelector");
+
+        const userNameInput = document.getElementById("userName");
+        const dailyPayInput = document.getElementById("dailyPayInput");
+        const otRateInput = document.getElementById("otRateInput");
+        const advanceInput = document.getElementById("advanceInput");
+        const epfoToggle = document.getElementById("epfoToggle");
+
+        const displayUser = document.getElementById("displayUser");
+        const totalOTEl = document.getElementById("totalOT");
+        const totalOTPayEl = document.getElementById("totalOTPay");
+        const totalDailyPayEl = document.getElementById("totalDailyPay");
+        const advancePayEl = document.getElementById("advancePay");
+        const epfoDeductEl = document.getElementById("epfoDeduct");
+        const grandTotalEl = document.getElementById("grandTotal");
+        const displayAbsentDaysEl = document.getElementById("displayAbsentDays");
+        const absentDeductionEl = document.getElementById("absentDeduction");
+
+        const prevMonthBtn = document.getElementById("prevMonthBtn");
+        const nextMonthBtn = document.getElementById("nextMonthBtn");
+        const currentMonthYearSpan = document.getElementById("currentMonthYear");
+        const restartButton = document.getElementById("restartButton"); 
+        
+        // const monthlyEarningsList = document.getElementById("monthlyEarningsList"); // हटाया गया
+
+        // --- ग्लोबल स्टेट ---
+        // ये वेरिएबल्स ऐप के डेटा को स्टोर करते हैं
+        let otData = {}; // ओवरटाइम घंटे: year -> month -> day -> hours
+        let absentData = {}; // अनुपस्थित स्थिति: year -> month -> day -> true/false
+        // let monthlyEarnings = {}; // हटाया गया
+        // monthlySettings: महीने-विशिष्ट सेटिंग्स जैसे dayCount
+        let monthlySettings = {};
+        let settings = {}; // यूजर की सामान्य प्रेफरेंस और पिछली देखी गई तारीख
+
+        let currentViewDate = new Date(); // कैलेंडर में वर्तमान में प्रदर्शित महीने को ट्रैक करता है
+
+        // --- मुख्य फ़ंक्शन ---
+
+        /**
+         * वर्तमान OT डेटा, अनुपस्थित डेटा, मासिक सेटिंग्स और वैश्विक सेटिंग्स को localStorage में सेव करता है।
+         */
+        function saveData() {
+            localStorage.setItem("otData", JSON.stringify(otData));
+            localStorage.setItem("absentData", JSON.stringify(absentData));
+            // localStorage.setItem("monthlyEarnings", JSON.stringify(monthlyEarnings)); // हटाया गया
+            localStorage.setItem("monthlySettings", JSON.stringify(monthlySettings)); // मासिक सेटिंग्स सेव करें
+            localStorage.setItem("settings", JSON.stringify({
+                userName: userNameInput.value,
+                dailyPay: dailyPayInput.value,
+                otRate: otRateInput.value,
+                advance: advanceInput.value,
+                epfoEnabled: epfoToggle.checked,
+                lastViewedDate: currentViewDate.toISOString() // वर्तमान में देखे गए महीने/साल को सेव करें
+            }));
+        }
+
+        /**
+         * localStorage से सेव किया गया डेटा लोड करता है और इनपुट फ़ील्ड को भरता है।
+         * यदि कोई डेटा नहीं मिलता है, तो डिफ़ॉल्ट मानों का उपयोग किया जाता है।
+         */
+        function loadData() {
+            otData = JSON.parse(localStorage.getItem("otData") || "{}");
+            absentData = JSON.parse(localStorage.getItem("absentData") || "{}");
+            // monthlyEarnings = JSON.parse(localStorage.getItem("monthlyEarnings") || "{}"); // हटाया गया
+            monthlySettings = JSON.parse(localStorage.getItem("monthlySettings") || "{}"); // मासिक सेटिंग्स लोड करें
+            settings = JSON.parse(localStorage.getItem("settings") || "{}");
+
+            // इनपुट फ़ील्ड को सेव किए गए या डिफ़ॉल्ट मानों से भरें
+            userNameInput.value = settings.userName || "";
+            dailyPayInput.value = settings.dailyPay || 0;
+            otRateInput.value = settings.otRate || 0;
+            advanceInput.value = settings.advance || 0;
+            epfoToggle.checked = settings.epfoEnabled !== undefined ? settings.epfoEnabled : true;
+            
+            // पिछली देखी गई तारीख को पुनर्स्थापित करें या न मिलने पर वर्तमान तारीख पर सेट करें
+            if (settings.lastViewedDate) {
+                currentViewDate = new Date(settings.lastViewedDate);
+            } else {
+                currentViewDate = new Date();
+            }
+            // महीने बदलने पर समस्याओं से बचने के लिए दिन को 1 पर सेट करें (जैसे फरवरी 30)
+            currentViewDate.setDate(1); 
+        }
+
+        /**
+         * वर्तमान महीने/साल के लिए कैलेंडर ग्रिड को रेंडर करता है।
+         * OT घंटे भरता है और अनुपस्थित दिनों को मार्क करता है।
+         */
+        function renderCalendar() {
+            const year = currentViewDate.getFullYear(); // वर्तमान साल
+            const month = currentViewDate.getMonth(); // वर्तमान महीना (0-इंडेक्स)
+            
+            // वर्तमान महीने के लिए dayCount को monthlySettings से प्राप्त करें या डिफ़ॉल्ट उपयोग करें
+            if (!monthlySettings[year]) monthlySettings[year] = {};
+            if (!monthlySettings[year][month]) {
+                monthlySettings[year][month] = { dayCount: 27 }; // नए महीने के लिए डिफ़ॉल्ट 27 दिन
+            }
+            let dayCount = parseInt(monthlySettings[year][month].dayCount);
+
+            // dayCountSelector (ड्रॉपडाउन) को इस महीने के लिए सहेजे गए मान पर सेट करें
+            dayCountSelector.value = dayCount; 
+
+            // महीने के नामों को हिंदी में
+            const monthNames = ["जनवरी", "फरवरी", "मार्च", "अप्रैल", "मई", "जून",
+                                "जुलाई", "अगस्त", "सितंबर", "अक्टूबर", "नवंबर", "दिसंबर"];
+            currentMonthYearSpan.textContent = `${monthNames[month]} ${year}`; // वर्तमान महीना और साल प्रदर्शित करें
+
+            // वर्तमान साल और महीने के लिए डेटा स्ट्रक्चर को इनिशियलाइज़ करें यदि वे मौजूद नहीं हैं
+            if (!otData[year]) { otData[year] = {}; }
+            if (!otData[year][month]) { otData[year][month] = {}; }
+            if (!absentData[year]) { absentData[year] = {}; }
+            if (!absentData[year][month]) { absentData[year][month] = {}; }
+            // if (!monthlyEarnings[year]) { monthlyEarnings[year] = {}; } // हटाया गया
+
+
+            calendarGrid.innerHTML = ""; // मौजूदा ग्रिड को साफ़ करें ताकि फिर से रेंडर कर सकें
+
+            // चयनित सीमा में प्रत्येक दिन के लिए दिन बॉक्स बनाएं
+            for (let i = 1; i <= dayCount; i++) {
+                const dayKey = i; // दिन संख्या (जैसे 1, 2, 3...)
+                const otVal = otData[year]?.[month]?.[dayKey] || 0; // इस दिन के लिए संग्रहीत OT प्राप्त करें
+                const isAbsent = absentData[year]?.[month]?.[dayKey] || false; // जांचें कि दिन अनुपस्थित मार्क है या नहीं
+
+                const box = document.createElement("div");
+                box.className = "day";
+                if (isAbsent) {
+                    box.classList.add("absent-day"); // यदि अनुपस्थित मार्क है तो CSS क्लास जोड़ें
+                }
+                
+                box.innerHTML = `
+                    <div>Day ${dayKey}</div>
+                    <input type="number" min="0" step="0.1" value="${otVal}" data-day="${dayKey}" />
+                `;
+                calendarGrid.appendChild(box);
+
+                // OT इनपुट परिवर्तन के लिए इवेंट लिसनर संलग्न करें
+                const inputElement = box.querySelector('input');
+                inputElement.addEventListener('input', (event) => {
+                    // `toggleAbsent` को फायर होने से रोकने के लिए इवेंट प्रोपेगेशन रोकें
+                    event.stopPropagation(); 
+                    updateOT(year, month, dayKey, event.target.value);
+                });
+
+                // दिन बॉक्स पर क्लिक इवेंट लिसनर संलग्न करें (अनुपस्थित स्थिति को टॉगल करता है)
+                box.addEventListener('click', (event) => {
+                    // यदि क्लिक इनपुट फ़ील्ड से हुआ है, तो कुछ न करें
+                    if (event.target.tagName.toLowerCase() === 'input') {
+                        return; 
+                    }
+                    toggleAbsent(year, month, dayKey, box);
+                });
+            }
+            updateTotals(); // कैलेंडर रेंडर होने के बाद कुल योग की पुनर्गणना और प्रदर्शन करें
+            // renderMonthlyAnalysis(); // हटाया गया
+        }
+
+        /**
+         * एक विशिष्ट दिन के लिए OT घंटे को अपडेट करता है।
+         * @param {number} year - दिन का साल।
+         * @param {number} month - दिन का 0-इंडेक्स वाला महीना।
+         * @param {number} day - दिन संख्या।
+         * @param {string} value - OT घंटों के लिए इनपुट मान।
+         */
+        function updateOT(year, month, day, value) {
+            otData[year][month][day] = parseFloat(value) || 0; // संख्या में बदलें, डिफ़ॉल्ट 0
+            saveData();
+            updateTotals();
+        }
+
+        /**
+         * एक विशिष्ट दिन के लिए अनुपस्थित स्थिति को टॉगल करता है।
+         * यदि दिन अनुपस्थित है, तो वह उपस्थित हो जाता है; यदि उपस्थित है, तो वह अनुपस्थित हो जाता है।
+         * @param {number} year - दिन का साल।
+         * @param {number} month - दिन का 0-इंडेक्स वाला महीना।
+         * @param {number} day - दिन संख्या।
+         * @param {HTMLElement} dayElement - दिन बॉक्स के लिए DOM एलिमेंट।
+         */
+        function toggleAbsent(year, month, day, dayElement) {
+            if (absentData[year]?.[month]?.[day]) {
+                // यदि पहले से अनुपस्थित है, तो उसे हटा दें
+                delete absentData[year][month][day]; 
+                dayElement.classList.remove("absent-day"); // हल्का लाल स्टाइल हटा दें
+            } else {
+                // यदि दिन अनुपस्थित नहीं है, तो उसे अनुपस्थित मार्क करें
+                if (!absentData[year][month]) { 
+                    absentData[year][month] = {};
+                }
+                absentData[year][month][day] = true; 
+                dayElement.classList.add("absent-day"); // हल्का लाल स्टाइल जोड़ें
+                
+                // वैकल्पिक: यदि दिन अनुपस्थित मार्क है तो OT घंटे 0 पर सेट करें
+                // otData[year][month][day] = 0; 
+                // dayElement.querySelector('input').value = 0; 
+            }
+            saveData();
+            updateTotals(); 
+        }
+
+        /**
+         * वर्तमान महीने के लिए सभी कुल आंकड़े की गणना और अपडेट करता है।
+         */
+        function updateTotals() {
+            const year = currentViewDate.getFullYear();
+            const month = currentViewDate.getMonth(); 
+            
+            // वर्तमान महीने के लिए dayCount प्राप्त करें (अब monthlySettings से)
+            const dayCount = parseInt(monthlySettings[year][month]?.dayCount || dayCountSelector.value);
+
+            let totalOTHours = 0;
+            let totalAbsentDays = 0;
+
+            // प्रदर्शित दिनों के माध्यम से OT का योग करें और अनुपस्थित दिनों को गिनें
+            for (let i = 1; i <= dayCount; i++) {
+                totalOTHours += otData[year]?.[month]?.[i] || 0;
+                if (absentData[year]?.[month]?.[i]) {
+                    totalAbsentDays++;
+                }
+            }
+
+            // इनपुट फ़ील्ड से मान प्राप्त करें, यदि वैध संख्या नहीं है तो डिफ़ॉल्ट 0
+            const user = userNameInput.value.trim() || "---"; 
+            const dailyPay = parseFloat(dailyPayInput.value) || 0;
+            const otRate = parseFloat(otRateInput.value) || 0;
+            const advance = parseFloat(advanceInput.value) || 0;
+
+            // --- गणना ---
+            const totalOTPayment = totalOTHours * otRate;
+            
+            // अनुपस्थित दिनों को कुल दिनों से घटाकर वास्तविक कार्य दिवसों की गणना करें
+            const actualWorkingDays = Math.max(0, dayCount - totalAbsentDays); // नकारात्मक न हो
+            const totalDailyPayment = dailyPay * actualWorkingDays; 
+
+            let epfoDeduction = 0;
+            if (epfoToggle.checked) {
+                epfoDeduction = totalDailyPayment * 0.12; 
+            }
+
+            // अनुपस्थित दिनों के लिए कटौती की राशि (केवल प्रदर्शन के लिए, पहले से totalDailyPayment में शामिल है)
+            const absentDeductionAmount = totalAbsentDays * dailyPay; 
+
+            // ग्रैंड टोटल: OT वेतन और दैनिक वेतन का योग, EPFO और अग्रिम घटाकर
+            const grandTotal = totalOTPayment + totalDailyPayment - epfoDeduction - advance;
+
+            // monthlyEarnings[year][month] = grandTotal; // हटाया गया
+
+            // --- UI एलिमेंट्स अपडेट करें ---
+            displayUser.textContent = user;
+            totalOTEl.textContent = totalOTHours.toFixed(1); // घंटों के लिए एक दशमलव स्थान
+            totalOTPayEl.textContent = totalOTPayment.toFixed(2); // मुद्रा के लिए दो दशमलव स्थान
+            totalDailyPayEl.textContent = totalDailyPayment.toFixed(2);
+            advancePayEl.textContent = advance.toFixed(2);
+            displayAbsentDaysEl.textContent = totalAbsentDays; 
+            absentDeductionEl.textContent = absentDeductionAmount.toFixed(2);
+            epfoDeductEl.textContent = epfoDeduction.toFixed(2);
+            grandTotalEl.textContent = grandTotal.toFixed(2);
+
+            saveData(); // कुल योग अपडेट करने के बाद सभी डेटा सेव करें
+            // renderMonthlyAnalysis(); // हटाया गया
+        }
+
+        // /**
+        //  * विश्लेषण सेक्शन में मासिक कमाई की सूची को रेंडर करता है।
+        //  */
+        // function renderMonthlyAnalysis() { // हटाया गया
+        //     monthlyEarningsList.innerHTML = ''; 
+
+        //     const monthNames = ["जनवरी", "फरवरी", "मार्च", "अप्रैल", "मई", "जून",
+        //                         "जुलाई", "अगस्त", "सितंबर", "अक्टूबर", "नवंबर", "दिसंबर"];
+
+        //     let hasData = false;
+        //     const sortedYears = Object.keys(monthlyEarnings).sort((a, b) => b - a);
+        //     for (const year of sortedYears) {
+        //         const sortedMonths = Object.keys(monthlyEarnings[year]).sort((a, b) => b - a);
+        //         for (const month of sortedMonths) {
+        //             const earning = monthlyEarnings[year][month];
+        //             if (earning !== undefined && earning !== null) {
+        //                 hasData = true;
+        //                 const listItem = document.createElement('li');
+        //                 listItem.innerHTML = `
+        //                     <span>${monthNames[month]} ${year}</span>
+        //                     <span>₹${earning.toFixed(2)}</span>
+        //                 `;
+        //                 monthlyEarningsList.appendChild(listItem);
+        //             }
+        //         }
+        //     }
+
+        //     if (!hasData) {
+        //         const noData = document.createElement('li');
+        //         noData.textContent = 'No data available. Navigate through months to record earnings.';
+        //         monthlyEarningsList.appendChild(noData);
+        //     }
+        // }
+
+
+        /**
+         * सभी डेटा (OT घंटे, अनुपस्थित दिन, मासिक सेटिंग्स और वैश्विक सेटिंग्स) को रीसेट करता है और UI को रीफ्रेश करता है।
+         */
+        function restartApp() {
+            if (confirm("क्या आप वाकई सभी डेटा हटाना चाहते हैं? यह कार्रवाई वापस नहीं ली जा सकती।")) {
+                localStorage.clear(); // ब्राउज़र के स्थानीय स्टोरेज से सभी डेटा साफ़ करें
+                otData = {}; // वैश्विक OT डेटा ऑब्जेक्ट रीसेट करें
+                absentData = {};
+                // monthlyEarnings = {}; // हटाया गया
+                monthlySettings = {}; // मासिक सेटिंग्स रीसेट करें
+                settings = {};
+
+                // इनपुट फ़ील्ड को उनके प्रारंभिक या डिफ़ॉल्ट मानों पर रीसेट करें
+                userNameInput.value = "";
+                dailyPayInput.value = 0;
+                otRateInput.value = 0;
+                advanceInput.value = 0;
+                dayCountSelector.value = 27; // डिफ़ॉल्ट मान
+                epfoToggle.checked = true; // डिफ़ॉल्ट रूप से चेक किया गया
+
+                currentViewDate = new Date(); // कैलेंडर दृश्य को वर्तमान महीने पर रीसेट करें
+                currentViewDate.setDate(1); 
+
+                renderCalendar(); // खाली डेटा के साथ कैलेंडर को फिर से रेंडर करें
+                updateTotals(); // 0s दिखाने के लिए कुल योग को अपडेट करें
+                // renderMonthlyAnalysis(); // हटाया गया
+                alert("सभी डेटा सफलतापूर्वक साफ़ कर दिया गया!");
+            }
+        }
+
+
+        // --- इवेंट लिसनर ---
+        userNameInput.addEventListener('input', updateTotals);
+        dailyPayInput.addEventListener('input', updateTotals);
+        otRateInput.addEventListener('input', updateTotals);
+        advanceInput.addEventListener('input', updateTotals);
+        epfoToggle.addEventListener('change', updateTotals);
+
+        dayCountSelector.addEventListener('change', (event) => {
+            const year = currentViewDate.getFullYear();
+            const month = currentViewDate.getMonth();
+            if (!monthlySettings[year]) monthlySettings[year] = {};
+            // चयनित मान को वर्तमान महीने के लिए monthlySettings में सेव करें
+            monthlySettings[year][month] = { dayCount: event.target.value };
+            saveData(); // अपडेटेड मासिक सेटिंग सेव करें
+            renderCalendar(); // नई दिन गणना को प्रतिबिंबित करने के लिए फिर से रेंडर करें
+            updateTotals(); 
+        });
+
+        prevMonthBtn.addEventListener('click', () => {
+            updateTotals(); 
+            currentViewDate.setMonth(currentViewDate.getMonth() - 1); 
+            renderCalendar(); 
+        });
+
+        nextMonthBtn.addEventListener('click', () => {
+            updateTotals(); 
+            currentViewDate.setMonth(currentViewDate.getMonth() + 1); 
+            renderCalendar(); 
+        });
+
+        restartButton.addEventListener('click', restartApp);
+
+
+        // --- इनिशियलाइज़ेशन ---
+        document.addEventListener('DOMContentLoaded', () => {
+            loadData(); 
+            renderCalendar(); 
+            // renderMonthlyAnalysis(); // हटाया गया
+        });
+    </script>
+</body>
+</html>
